@@ -1,33 +1,63 @@
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
+using System.Text;
+using TestApiApp;
 using TestApiApp.Database;
+using TestApiApp.Extensions;
 using TestApiApp.Models.User;
+using TestApiApp.Options;
 using TestApiApp.Repositories.UnitOfWork;
-using TestApiApp.Services.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 builder.Services.AddControllers();
-builder.Services.AddMediatR(typeof(Program));
+builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services
-    .AddEntityFrameworkNpgsql()
-    .AddDbContext<ApplicationDbContext>(options => options.UseNpgsql("Host=localhost;Port=5433;Database=testdb;Username=postgres;Password=admin"));
+    .AddDbContext<ApplicationDbContext>(options => 
+    options.UseNpgsql(configuration.GetConnectionString(ApplicationConstants.APPLICATION_CONTEXT)));
 builder.Services
     .AddIdentity<UserModel, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(swagger =>
+
+builder.Services.Configure<IdentityOptions>(options =>
 {
-    swagger.EnableAnnotations();
+    options.User.RequireUniqueEmail = true;
 });
 
-// Repositories
-builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+builder.Services.Configure<BearerTokenOptions>(configuration.GetSection(ApplicationConstants.TOKEN_OPTIONS));
 
-// Services
-builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
+builder.Services.AddSwagger();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidateAudience = true,
+        ValidIssuer = configuration[ApplicationConstants.TOKEN_OPTIONS_ISSUER],
+        ValidAudience = configuration[ApplicationConstants.TOKEN_OPTIONS_AUDIENCE],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.ASCII.GetBytes(configuration[ApplicationConstants.TOKEN_OPTIONS_ISSUE_SIGNING_KEY])),
+    };
+});
+
+builder.Services.AddRepositories();
+builder.Services.AddCustomServices();
 
 var app = builder.Build();
 
@@ -38,6 +68,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();

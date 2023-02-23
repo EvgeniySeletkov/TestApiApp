@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Storage;
 using TestApiApp.Database;
 using TestApiApp.Models.User;
 
@@ -8,8 +9,6 @@ namespace TestApiApp.Repositories.UnitOfWork
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public UserManager<UserModel> UserManager { get; }
-
         public UnitOfWork(
             ApplicationDbContext dbContext,
             UserManager<UserModel> userManager)
@@ -17,6 +16,18 @@ namespace TestApiApp.Repositories.UnitOfWork
             UserManager = userManager;
 
             _dbContext = dbContext;
+        }
+
+        public UserManager<UserModel> UserManager { get; }
+
+        public IDbContextTransaction CreateTransaction()
+        {
+            return _dbContext.Database.BeginTransaction();
+        }
+
+        public Task<IDbContextTransaction> CreateTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return _dbContext.Database.BeginTransactionAsync(cancellationToken);
         }
 
         public void Commit()
