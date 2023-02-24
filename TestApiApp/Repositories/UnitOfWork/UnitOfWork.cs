@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using TestApiApp.Database;
 using TestApiApp.Models.User;
+using TestApiApp.Repositories.Contracts;
 
 namespace TestApiApp.Repositories.UnitOfWork
 {
@@ -11,14 +12,17 @@ namespace TestApiApp.Repositories.UnitOfWork
 
         public UnitOfWork(
             ApplicationDbContext dbContext,
-            UserManager<UserModel> userManager)
+            UserManager<UserModel> userManager,
+            IItemRepository itemRepository)
         {
             UserManager = userManager;
+            ItemRepository = itemRepository;
 
             _dbContext = dbContext;
         }
 
         public UserManager<UserModel> UserManager { get; }
+        public IItemRepository ItemRepository { get; }
 
         public IDbContextTransaction CreateTransaction()
         {

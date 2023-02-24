@@ -3,6 +3,7 @@ using LS.Helpers.Hosting.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TestApiApp.Commands;
+using TestApiApp.Extensions;
 using TestApiApp.Queries;
 
 namespace TestApiApp.Controllers
@@ -16,6 +17,7 @@ namespace TestApiApp.Controllers
         }
 
         protected IMediator Mediator { get; }
+        protected string UserId => User.GetUserId();
 
         protected async Task<IActionResult> ExecuteCommandAsync<T>(ICommand<ExecutionResult<T>> command, CancellationToken cancellationToken)
         {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TestApiApp.Models.Item;
 using TestApiApp.Models.User;
 
 namespace TestApiApp.Database
@@ -9,5 +10,7 @@ namespace TestApiApp.Database
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+
+        public DbSet<ItemModel> Items { get; set; }
     }
 }

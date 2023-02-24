@@ -1,4 +1,6 @@
 ﻿using Microsoft.OpenApi.Models;
+using TestApiApp.Repositories;
+using TestApiApp.Repositories.Contracts;
 using TestApiApp.Repositories.UnitOfWork;
 using TestApiApp.Services.Token;
 
@@ -47,6 +49,7 @@ namespace TestApiApp.Extensions
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IItemRepository, ItemRepository>();
 
             return services;
         }

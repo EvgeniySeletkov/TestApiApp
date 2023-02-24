@@ -1,5 +1,4 @@
 ﻿using LS.Helpers.Hosting.API;
-using LS.Helpers.Hosting.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

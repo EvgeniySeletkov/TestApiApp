@@ -21,8 +21,7 @@ namespace TestApiApp.Services.Token
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email , user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
             };
 
             var now = DateTime.UtcNow;
